@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# ✅ Clean Architecture: Import del router de Infrastructure
+# ✅ Clean Architecture: Import de routers de Infrastructure
 from src.products.infrastructure.api import router as products_router
+from src.users.infrastructure.api import router as users_router
 
-# ✅ Clean Architecture: Import del DI Container para inicialización
+# ✅ Clean Architecture: Import de DI Containers para inicialización
 from src.products.executions import init_products_module
+from src.users.executions import init_users_module
 
 # ✅ Configuración mejorada con documentación
 app = FastAPI(
@@ -28,6 +30,7 @@ app.add_middleware(
 
 # ✅ Include routers - Clean Architecture
 app.include_router(products_router)
+app.include_router(users_router)
 
 
 @app.get("/", tags=["General"])
@@ -49,9 +52,10 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    # ✅ Initialize products module with Clean Architecture
+    # ✅ Initialize all modules with Clean Architecture
     print("🔧 Initializing E-commerce API with Clean Architecture...")
     init_products_module()
+    init_users_module()
     print("✅ All modules initialized successfully")
 
     # ✅ Start server
