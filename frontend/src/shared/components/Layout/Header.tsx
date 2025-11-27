@@ -8,6 +8,7 @@ import {
   Typography,
   Input,
   Select,
+  Flex,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -123,7 +124,7 @@ const AppHeader: React.FC = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 24px",
+        padding: "16px 24px",
         background: "#fff",
         borderBottom: "1px solid #f0f0f0",
         // ❌ PROBLEMA: No box-shadow para depth
@@ -168,32 +169,30 @@ const AppHeader: React.FC = () => {
 
       {/* ❌ PROBLEMA: Right Side Actions sin responsive behavior */}
       {/* ❌ PROBLEMA: No collapse en mobile */}
-      <Space size="middle" wrap>
+      <Flex gap={"middle"}>
         {/* Search Bar and Category Filter */}
-        <Space size="small" wrap>
-          <Search
-            placeholder="Search products..."
-            allowClear
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onSearch={handleSearch}
-            style={{ width: 200 }}
-            enterButton={<SearchOutlined />}
-          />
-          <Select
-            placeholder="Category"
-            allowClear
-            value={categoryValue}
-            onChange={handleCategoryChange}
-            style={{ width: 150 }}
-          >
-            <Select.Option value="">All Categories</Select.Option>
-            <Select.Option value="Electronics">Electronics</Select.Option>
-            <Select.Option value="Home">Home</Select.Option>
-            <Select.Option value="Sports">Sports</Select.Option>
-            <Select.Option value="Clothing">Clothing</Select.Option>
-          </Select>
-        </Space>
+        <Search
+          placeholder="Search products..."
+          allowClear
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onSearch={handleSearch}
+          style={{ width: 200 }}
+          enterButton={<SearchOutlined />}
+        />
+        <Select
+          placeholder="Category"
+          allowClear
+          value={categoryValue}
+          onChange={handleCategoryChange}
+          style={{ width: 150 }}
+        >
+          <Select.Option value="">All Categories</Select.Option>
+          <Select.Option value="Electronics">Electronics</Select.Option>
+          <Select.Option value="Home">Home</Select.Option>
+          <Select.Option value="Sports">Sports</Select.Option>
+          <Select.Option value="Clothing">Clothing</Select.Option>
+        </Select>
 
         {/* ❌ PROBLEMA: Wishlist sin implementación */}
         {/* ❌ PROBLEMA: Badge sin animación cuando cambia el count */}
@@ -238,7 +237,7 @@ const AppHeader: React.FC = () => {
             Login
           </Button>
         )}
-      </Space>
+      </Flex>
     </Header>
   );
 };
