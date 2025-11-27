@@ -24,6 +24,11 @@ export function useProducts(
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ProductsFilters>(initialFilters || {});
 
+  // Sync filters state when initialFilters prop changes
+  useEffect(() => {
+    setFilters(initialFilters || {});
+  }, [initialFilters]);
+
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
