@@ -13,21 +13,12 @@ interface UseProductsReturn {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  setFilters: (filters: ProductsFilters) => void;
 }
 
-export function useProducts(
-  initialFilters?: ProductsFilters
-): UseProductsReturn {
+export function useProducts(filters?: ProductsFilters): UseProductsReturn {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ProductsFilters>(initialFilters || {});
-
-  // Sync filters state when initialFilters prop changes
-  useEffect(() => {
-    setFilters(initialFilters || {});
-  }, [initialFilters]);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -52,6 +43,5 @@ export function useProducts(
     loading,
     error,
     refetch: fetchProducts,
-    setFilters,
   };
 }
