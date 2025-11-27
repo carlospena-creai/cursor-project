@@ -4,7 +4,7 @@
  * Maneja todas las llamadas HTTP al backend de productos.
  * Encapsula la lógica de API en un solo lugar.
  */
-import type { Product, ProductsFilters } from "../types";
+import type { Product, ProductsFilters } from "../types/product.types";
 
 const API_BASE_URL = "http://localhost:8000";
 

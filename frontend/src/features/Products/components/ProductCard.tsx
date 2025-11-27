@@ -6,7 +6,7 @@
  */
 import React from "react";
 import { Card, Typography, Tag } from "antd";
-import type { Product } from "../types";
+import type { Product } from "../types/product.types";
 
 const { Title, Paragraph } = Typography;
 const { Meta } = Card;

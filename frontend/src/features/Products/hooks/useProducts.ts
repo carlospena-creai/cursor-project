@@ -5,8 +5,8 @@
  * Encapsula fetching, loading states, error handling.
  */
 import { useState, useEffect, useCallback } from "react";
-import { productsApi } from "../services/productsApi";
-import type { Product, ProductsFilters } from "../types";
+import { productsApi } from "../utils/productsApi";
+import type { Product, ProductsFilters } from "../types/product.types";
 
 interface UseProductsReturn {
   products: Product[];

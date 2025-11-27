@@ -1,10 +1,10 @@
 import React from "react";
 import { Typography } from "antd";
-import { ProductsList } from "../features/Products";
+import { ProductsList } from "../components/ProductsList";
 
 const { Title, Paragraph, Text } = Typography;
 
-const HomePage: React.FC = () => {
+const ProductsPage: React.FC = () => {
   return (
     <div>
       {/* Hero Section */}
@@ -52,4 +52,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default ProductsPage;

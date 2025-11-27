@@ -18,7 +18,7 @@ import {
 } from "antd";
 import { useProducts } from "../hooks/useProducts";
 import { ProductCard } from "./ProductCard";
-import type { ProductsFilters } from "../types";
+import type { ProductsFilters } from "../types/product.types";
 
 const { Title } = Typography;
 const { Search } = Input;
