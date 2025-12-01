@@ -5,7 +5,9 @@
  * Muestra la información de un producto en formato de tarjeta.
  */
 import React from "react";
-import { Card, Typography, Tag } from "antd";
+import { Card, Typography, Tag, Button, Space } from "antd";
+import { ShoppingCartOutlined } from "@ant-design/icons";
+import { useCart } from "../../Orders/context/CartContext";
 import type { Product } from "../types/product.types";
 
 const { Title, Paragraph } = Typography;
@@ -16,6 +18,8 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { addItem, isInCart } = useCart();
+
   // Generar imagen placeholder basada en categoría
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -30,6 +34,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const imageUrl = `https://via.placeholder.com/300x200/${getCategoryColor(
     product.category
   )}/white?text=${encodeURIComponent(product.name)}`;
+
+  const handleAddToCart = () => {
+    if (product.stock > 0) {
+      addItem(product, 1);
+    }
+  };
+
+  const inCart = isInCart(product.id);
+  const canAddToCart = product.stock > 0;
 
   return (
     <Card
@@ -48,6 +61,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
         </div>
       }
+      actions={[
+        <Button
+          key="add-to-cart"
+          type={inCart ? "default" : "primary"}
+          icon={<ShoppingCartOutlined />}
+          onClick={handleAddToCart}
+          disabled={!canAddToCart}
+          block
+        >
+          {inCart ? "In Cart" : canAddToCart ? "Add to Cart" : "Out of Stock"}
+        </Button>,
+      ]}
     >
       <Meta
         title={

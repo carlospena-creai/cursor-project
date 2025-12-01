@@ -18,6 +18,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useCart } from "../../../features/Orders/context/CartContext";
 
 const { Header } = Layout;
 const { Title } = Typography;
@@ -29,15 +30,14 @@ const { Search } = Input;
 const AppHeader: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { getItemCount } = useCart();
   const [searchValue, setSearchValue] = useState("");
   const [categoryValue, setCategoryValue] = useState<string | undefined>(
     undefined
   );
 
-  // ❌ PROBLEMA: Mock data hardcodeada - should come from context/state
-  // ❌ PROBLEMA: No type safety para el estado
-  // ❌ PROBLEMA: No loading states para contadores dinámicos
-  const cartItemsCount = 0; // Will come from cart context in Day 3
+  // ✅ ACTUALIZADO: Usa Cart Context para obtener el contador real
+  const cartItemsCount = getItemCount();
   const isAuthenticated = false; // Will come from auth context in Day 4
   const wishlistCount = 0; // Will be implemented later
 
@@ -51,20 +51,19 @@ const AppHeader: React.FC = () => {
       label: "Products",
       onClick: () => navigate("/"),
     },
-    // ❌ PROBLEMA: More menu items will be added but no structure for it
-    // TODO Day 3: Orders, Cart
+    {
+      key: "/orders",
+      icon: <ShopOutlined />,
+      label: "Orders",
+      onClick: () => navigate("/orders"),
+    },
     // TODO Day 4: Profile, Login
     // TODO Day 5: Admin (if admin user)
   ];
 
-  // ❌ PROBLEMA: Event handlers inline - should use useCallback for optimization
-  // ❌ PROBLEMA: No error handling en navegación
-  // ❌ PROBLEMA: No analytics tracking en clicks
+  // ✅ ACTUALIZADO: Navega al carrito
   const handleCartClick = () => {
-    console.log("Cart clicked - will navigate to cart in Day 3");
-    // ❌ PROBLEMA: Console.log en vez de proper logging
-    // ❌ PROBLEMA: No feedback visual al usuario
-    // navigate('/cart') // Will be implemented in Day 3
+    navigate("/cart");
   };
 
   const handleWishlistClick = () => {
