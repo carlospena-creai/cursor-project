@@ -137,12 +137,9 @@ async def create_order(
     ✅ Protected endpoint - requires authentication
     """
     try:
-        # Asegurar que el user_id del order_data coincida con el usuario autenticado
-        if order_data.user_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only create orders for yourself",
-            )
+        # Establecer user_id automáticamente desde el usuario autenticado
+        # El frontend ya no envía user_id, lo obtenemos del token JWT
+        order_data.user_id = current_user.id
 
         # ✅ Obtener Use Case del DI Container
         use_case: CreateOrderUseCase = get_create_order_use_case()

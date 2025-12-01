@@ -182,9 +182,14 @@ class OrderCreate(BaseModel):
 
     Contiene solo los campos necesarios para la creación.
     Los items deben incluir product_id y quantity.
+    El user_id se obtiene automáticamente del usuario autenticado (opcional en request).
     """
 
-    user_id: int = Field(..., gt=0, description="ID del usuario que realiza la orden")
+    user_id: Optional[int] = Field(
+        None,
+        gt=0,
+        description="ID del usuario (se obtiene del token JWT si no se proporciona)",
+    )
     items: List[OrderItemCreate] = Field(
         ..., min_items=1, description="Lista de items de la orden"
     )
@@ -202,18 +207,10 @@ class OrderCreate(BaseModel):
             raise ValueError("Order must have at least one item")
         return v
 
-    @validator("user_id")
-    def validate_user_id(cls, v):
-        """Valida el user_id"""
-        if v <= 0:
-            raise ValueError("user_id must be positive")
-        return v
-
     class Config:
         use_enum_values = True
         schema_extra = {
             "example": {
-                "user_id": 1,
                 "items": [
                     {"product_id": 1, "quantity": 2},
                     {"product_id": 3, "quantity": 1},
