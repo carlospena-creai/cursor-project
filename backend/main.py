@@ -5,10 +5,12 @@ import uvicorn
 # ✅ Clean Architecture: Import de routers de Infrastructure
 from src.products.infrastructure.api import router as products_router
 from src.users.infrastructure.api import router as users_router
+from src.orders.infrastructure.api import router as orders_router
 
 # ✅ Clean Architecture: Import de DI Containers para inicialización
 from src.products.executions import init_products_module
 from src.users.executions import init_users_module
+from src.orders.executions import init_orders_module
 
 # ✅ Configuración mejorada con documentación
 app = FastAPI(
@@ -31,6 +33,7 @@ app.add_middleware(
 # ✅ Include routers - Clean Architecture
 app.include_router(products_router)
 app.include_router(users_router)
+app.include_router(orders_router)
 
 
 @app.get("/", tags=["General"])
@@ -56,6 +59,7 @@ if __name__ == "__main__":
     print("🔧 Initializing E-commerce API with Clean Architecture...")
     init_products_module()
     init_users_module()
+    init_orders_module()
     print("✅ All modules initialized successfully")
 
     # ✅ Start server
