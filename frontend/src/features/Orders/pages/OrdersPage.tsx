@@ -7,15 +7,18 @@ import React from "react";
 import { Typography } from "antd";
 import { useOrders } from "../hooks/useOrders";
 import { OrderList } from "../components/OrderList";
+import { useAuth } from "../../Auth/context/AuthContext";
 
 const { Title } = Typography;
 
 const OrdersPage: React.FC = () => {
-  // TODO: Obtener user_id del contexto de autenticación cuando esté disponible
-  // Por ahora usamos un valor por defecto
-  const userId = 1;
+  const { user } = useAuth();
 
-  const { orders, loading, error } = useOrders({ user_id: userId });
+  if (!user) {
+    return null;
+  }
+
+  const { orders, loading, error } = useOrders();
 
   return (
     <div>

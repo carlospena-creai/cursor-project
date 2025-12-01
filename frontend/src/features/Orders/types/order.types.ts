@@ -39,7 +39,6 @@ export interface Order {
 }
 
 export interface OrderCreate {
-  user_id: number;
   items: OrderItemCreate[];
   shipping_address?: string;
   notes?: string;
@@ -52,7 +51,6 @@ export interface OrderUpdate {
 }
 
 export interface OrdersFilters {
-  user_id?: number;
   status?: OrderStatus;
   limit?: number;
   offset?: number;

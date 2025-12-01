@@ -4,7 +4,7 @@
  * Página para mostrar y gestionar el carrito de compras.
  */
 import React from "react";
-import { Row, Col, Typography, Empty } from "antd";
+import { Row, Col, Typography } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { useCart } from "../context/CartContext";
 import { CartItem } from "../components/CartItem";

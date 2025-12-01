@@ -20,6 +20,7 @@ import { useCreateOrder } from "../hooks/useCreateOrder";
 import { CartSummary } from "../components/CartSummary";
 import { CartItem } from "../components/CartItem";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Auth/context/AuthContext";
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -27,12 +28,13 @@ const { TextArea } = Input;
 const CheckoutPage: React.FC = () => {
   const { items, clearCart } = useCart();
   const { createOrder, loading, error } = useCreateOrder();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  // TODO: Obtener user_id del contexto de autenticación cuando esté disponible
-  // Por ahora usamos un valor por defecto
-  const userId = 1;
+  if (!user) {
+    return null;
+  }
 
   const handleSubmit = async (values: {
     shipping_address?: string;
@@ -44,7 +46,6 @@ const CheckoutPage: React.FC = () => {
     }
 
     const orderData = {
-      user_id: userId,
       items: items.map((item) => ({
         product_id: item.productId,
         quantity: item.quantity,

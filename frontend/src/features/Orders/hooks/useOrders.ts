@@ -32,7 +32,7 @@ export function useOrders(filters?: OrdersFilters): UseOrdersReturn {
     } finally {
       setLoading(false);
     }
-  }, [filters?.user_id, filters?.status, filters?.limit, filters?.offset]);
+  }, [filters?.status, filters?.limit, filters?.offset]);
 
   useEffect(() => {
     fetchOrders();

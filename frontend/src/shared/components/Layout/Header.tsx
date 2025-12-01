@@ -4,7 +4,6 @@ import {
   Menu,
   Badge,
   Button,
-  Space,
   Typography,
   Input,
   Select,
@@ -18,6 +17,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../../features/Auth/context/AuthContext";
 import { useCart } from "../../../features/Orders/context/CartContext";
 
 const { Header } = Layout;
@@ -38,7 +38,7 @@ const AppHeader: React.FC = () => {
 
   // ✅ ACTUALIZADO: Usa Cart Context para obtener el contador real
   const cartItemsCount = getItemCount();
-  const isAuthenticated = false; // Will come from auth context in Day 4
+  const { isAuthenticated, user, logout } = useAuth();
   const wishlistCount = 0; // Will be implemented later
 
   // ❌ PROBLEMA: Menu items hardcodeados - should be configurable
@@ -74,15 +74,16 @@ const AppHeader: React.FC = () => {
   };
 
   const handleLoginClick = () => {
-    console.log("Login clicked - will navigate to login in Day 4");
-    // ❌ PROBLEMA: No redirect apropiado después del login
-    // navigate('/login') // Will be implemented in Day 4
+    navigate("/login");
   };
 
   const handleProfileClick = () => {
-    console.log("Profile clicked - will navigate to profile in Day 4");
-    // ❌ PROBLEMA: No dropdown con opciones de perfil
-    // navigate('/profile') // Will be implemented in Day 4
+    navigate("/profile");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   const handleSearch = (value: string) => {
@@ -215,24 +216,22 @@ const AppHeader: React.FC = () => {
           />
         </Badge>
 
-        {/* ❌ PROBLEMA: User Authentication muy básico */}
-        {/* ❌ PROBLEMA: No dropdown con opciones cuando está autenticado */}
-        {/* ❌ PROBLEMA: No avatar del usuario */}
+        {/* ✅ ACTUALIZADO: User Authentication con Auth Context */}
         {isAuthenticated ? (
-          <Button
-            type="text"
-            icon={<UserOutlined />}
-            onClick={handleProfileClick}
-            // ❌ PROBLEMA: No dropdown menu con Profile, Orders, Logout
-          >
-            Profile
-          </Button>
+          <>
+            <Button
+              type="text"
+              icon={<UserOutlined />}
+              onClick={handleProfileClick}
+            >
+              {user?.username || "Profile"}
+            </Button>
+            <Button type="text" onClick={handleLogout}>
+              Logout
+            </Button>
+          </>
         ) : (
-          <Button
-            type="primary"
-            onClick={handleLoginClick}
-            // ❌ PROBLEMA: No loading state durante login
-          >
+          <Button type="primary" onClick={handleLoginClick}>
             Login
           </Button>
         )}
