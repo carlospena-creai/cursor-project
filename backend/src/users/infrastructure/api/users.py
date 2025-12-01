@@ -4,16 +4,14 @@ Users API Endpoints
 Endpoints para autenticación y gestión de usuarios.
 """
 
-from fastapi import APIRouter, HTTPException, status, Header
-from typing import Optional
+from fastapi import APIRouter, HTTPException, status, Depends
 
-from ...domain.models.user import UserCreate, UserLogin, UserResponse
+from ...domain.models.user import User, UserCreate, UserLogin, UserResponse
 from ...executions import (
     get_register_user_use_case,
     get_login_user_use_case,
-    get_profile_use_case,
-    get_jwt_handler,
 )
+from ....shared.middleware.auth import get_current_active_user
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -81,69 +79,28 @@ async def login(login_data: UserLogin):
 
 
 @router.get("/profile", response_model=UserResponse)
-async def get_profile(authorization: Optional[str] = Header(None)):
+async def get_profile(
+    current_user: User = Depends(get_current_active_user),
+):
     """
     Obtiene el perfil del usuario autenticado
 
     Requiere token JWT en el header Authorization.
+    ✅ Usa middleware de autenticación
     """
     try:
-        if not authorization:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        # Extraer token del header "Bearer <token>"
-        try:
-            scheme, token = authorization.split()
-            if scheme.lower() != "bearer":
-                raise ValueError()
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        # Verificar token
-        jwt_handler = get_jwt_handler()
-        payload = jwt_handler.verify_token(token)
-
-        if not payload:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        # Obtener user_id del payload
-        user_id = int(payload.get("sub"))
-
-        # Obtener perfil
-        use_case = get_profile_use_case()
-        user = await use_case.execute(user_id)
-
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
-
         return UserResponse(
-            id=user.id,
-            email=user.email,
-            username=user.username,
-            full_name=user.full_name,
-            is_active=user.is_active,
-            is_admin=user.is_admin,
-            created_at=user.created_at,
+            id=current_user.id,
+            email=current_user.email,
+            username=current_user.username,
+            full_name=current_user.full_name,
+            is_active=current_user.is_active,
+            is_admin=current_user.is_admin,
+            created_at=current_user.created_at,
         )
 
     except HTTPException:
         raise
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         print(f"Error getting profile: {e}")
         raise HTTPException(

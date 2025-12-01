@@ -7,7 +7,7 @@ Orders API Endpoints - Clean Architecture
 ✅ Error handling consistente
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status, Depends
 from typing import List, Optional
 
 from ...domain.models.order import Order, OrderCreate, OrderUpdate, OrderStatus
@@ -24,6 +24,8 @@ from ...executions import (
     get_update_order_status_use_case,
 )
 from ...infrastructure.db.repositories.order_repository import SQLiteOrderRepository
+from ....shared.middleware.auth import get_current_active_user
+from ....users.domain.models.user import User
 
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -31,7 +33,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 
 @router.get("/", response_model=List[Order])
 async def get_orders(
-    user_id: Optional[int] = Query(None, gt=0, description="Filter by user ID"),
+    current_user: User = Depends(get_current_active_user),
     status: Optional[OrderStatus] = Query(None, description="Filter by status"),
     limit: int = Query(20, ge=1, le=100, description="Number of orders to return"),
     offset: int = Query(0, ge=0, description="Number of orders to skip"),
@@ -42,8 +44,14 @@ async def get_orders(
     ✅ Thin controller - delega a Use Case
     ✅ Validación con Query parameters
     ✅ Error handling
+    ✅ Protected endpoint - requires authentication
+    ✅ Regular users see only their own orders
+    ✅ Admins see all orders
     """
     try:
+        # Regular users see only their own orders, admins see all orders
+        user_id = None if current_user.is_admin else current_user.id
+
         # ✅ Obtener Use Case del DI Container
         use_case: GetOrdersUseCase = get_get_orders_use_case()
 
@@ -69,12 +77,16 @@ async def get_orders(
 
 
 @router.get("/{order_id}", response_model=Order)
-async def get_order(order_id: int):
+async def get_order(
+    order_id: int,
+    current_user: User = Depends(get_current_active_user),
+):
     """
     Get a single order by ID
 
     ✅ Thin controller
     ✅ Error handling apropiado
+    ✅ Protected endpoint - requires authentication
     """
     try:
         # ✅ Obtener Use Case del DI Container
@@ -87,6 +99,13 @@ async def get_order(order_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Order with id {order_id} not found",
+            )
+
+        # Solo el dueño de la orden o un admin puede verla
+        if order.user_id != current_user.id and not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only view your own orders",
             )
 
         return order
@@ -104,7 +123,10 @@ async def get_order(order_id: int):
 
 
 @router.post("/", response_model=Order, status_code=status.HTTP_201_CREATED)
-async def create_order(order_data: OrderCreate):
+async def create_order(
+    order_data: OrderCreate,
+    current_user: User = Depends(get_current_active_user),
+):
     """
     Create a new order
 
@@ -112,8 +134,16 @@ async def create_order(order_data: OrderCreate):
     ✅ Thin controller
     ✅ DTO apropiado (OrderCreate)
     ✅ Maneja reducción de stock automáticamente
+    ✅ Protected endpoint - requires authentication
     """
     try:
+        # Asegurar que el user_id del order_data coincida con el usuario autenticado
+        if order_data.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only create orders for yourself",
+            )
+
         # ✅ Obtener Use Case del DI Container
         use_case: CreateOrderUseCase = get_create_order_use_case()
 
@@ -133,15 +163,28 @@ async def create_order(order_data: OrderCreate):
 
 
 @router.patch("/{order_id}/status", response_model=Order)
-async def update_order_status(order_id: int, new_status: OrderStatus):
+async def update_order_status(
+    order_id: int,
+    new_status: OrderStatus,
+    current_user: User = Depends(get_current_active_user),
+):
     """
     Update order status
 
     ✅ Pydantic validation automática
     ✅ Thin controller
     ✅ Valida transiciones de estado
+    ✅ Protected endpoint - requires authentication
+    ✅ Only admins can update order status
     """
     try:
+        # Solo admins pueden actualizar el estado de órdenes
+        if not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only administrators can update order status",
+            )
+
         # ✅ Obtener Use Case del DI Container
         use_case: UpdateOrderStatusUseCase = get_update_order_status_use_case()
 

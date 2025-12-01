@@ -6,16 +6,11 @@ Dependency Injection: Los repositorios son inyectados.
 Clean Architecture: Depende de abstracciones (interfaces).
 """
 
-from typing import TYPE_CHECKING
-
 from ..domain.interfaces.repositories import IOrderRepository
 from ..domain.models.order import Order, OrderCreate
 from ...products.domain.models.product import ProductUpdate
-
-if TYPE_CHECKING:
-    # Solo para type hints, evitar import circular
-    from ...products.domain.interfaces.repositories import IProductRepository
-    from ...users.domain.interfaces.repositories import IUserRepository
+from ...products.domain.interfaces.repositories import IProductRepository
+from ...users.domain.interfaces.repositories import IUserRepository
 
 
 class CreateOrderUseCase:
@@ -34,8 +29,8 @@ class CreateOrderUseCase:
     def __init__(
         self,
         order_repository: IOrderRepository,
-        product_repository: "IProductRepository",
-        user_repository: "IUserRepository",
+        product_repository: IProductRepository,
+        user_repository: IUserRepository,
     ):
         """
         Inicializa el use case con los repositorios

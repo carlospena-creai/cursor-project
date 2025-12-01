@@ -7,10 +7,12 @@ Products API Endpoints - Clean Architecture
 ✅ Error handling consistente
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status, Depends
 from typing import List, Optional
 
 from ...domain.models.product import Product, ProductCreate, ProductUpdate
+from ....shared.middleware.auth import get_current_admin_user
+from ....users.domain.models.user import User
 from ...application import (
     CreateProductUseCase,
     GetProductsUseCase,
@@ -110,13 +112,17 @@ async def get_product(product_id: int):
 
 
 @router.post("/", response_model=Product, status_code=status.HTTP_201_CREATED)
-async def create_product(product_data: ProductCreate):
+async def create_product(
+    product_data: ProductCreate,
+    current_user: User = Depends(get_current_admin_user),
+):
     """
     Create a new product
 
     ✅ Pydantic validation automática
     ✅ Thin controller
     ✅ DTO apropiado (ProductCreate)
+    ✅ Protected endpoint - requires admin authentication
     """
     try:
         # ✅ Obtener Use Case del DI Container
@@ -138,13 +144,18 @@ async def create_product(product_data: ProductCreate):
 
 
 @router.put("/{product_id}", response_model=Product)
-async def update_product(product_id: int, product_data: ProductUpdate):
+async def update_product(
+    product_id: int,
+    product_data: ProductUpdate,
+    current_user: User = Depends(get_current_admin_user),
+):
     """
     Update an existing product
 
     ✅ Pydantic validation automática
     ✅ Partial update (PATCH-like)
     ✅ Thin controller
+    ✅ Protected endpoint - requires admin authentication
     """
     try:
         # ✅ Obtener Use Case del DI Container
@@ -174,13 +185,17 @@ async def update_product(product_id: int, product_data: ProductUpdate):
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(product_id: int):
+async def delete_product(
+    product_id: int,
+    current_user: User = Depends(get_current_admin_user),
+):
     """
     Delete a product (soft delete)
 
     ✅ Soft delete implementado
     ✅ Thin controller
     ✅ HTTP 204 No Content en éxito
+    ✅ Protected endpoint - requires admin authentication
     """
     try:
         # ✅ Obtener Use Case del DI Container
