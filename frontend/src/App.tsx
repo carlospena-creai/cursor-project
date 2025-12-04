@@ -56,11 +56,13 @@ const UsersManagementPage = lazy(() =>
     default: module.UsersManagementPage,
   }))
 );
+const NotFoundPage = lazy(() => import("./shared/pages/NotFoundPage"));
 
 // ✅ Error boundaries implementados para manejar crashes
 // ✅ Loading states globales con Suspense
 // ❌ PROBLEMA: No configuración de rutas protegidas
 // ✅ Lazy loading de rutas implementado
+// ✅ Página 404 y catch-all route implementados
 // ❌ PROBLEMA: No configuración de SEO (meta tags, etc.)
 
 const App: React.FC = () => {
@@ -189,8 +191,15 @@ const App: React.FC = () => {
                 {/* ❌ PROBLEMA: More routes will be added but no route protection */}
                 {/* TODO Day 2: /products, /products/:id */}
 
-                {/* ❌ PROBLEMA: No 404 route */}
-                {/* ❌ PROBLEMA: No catch-all route */}
+                {/* ✅ Página 404 y catch-all route */}
+                <Route
+                  path="*"
+                  element={
+                    <MainLayout>
+                      <NotFoundPage />
+                    </MainLayout>
+                  }
+                />
               </Routes>
             </Suspense>
           </CartProvider>
