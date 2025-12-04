@@ -8,6 +8,7 @@ import { Layout, Menu, Typography, Button } from "antd";
 import {
   DashboardOutlined,
   ShoppingOutlined,
+  ContainerOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShopOutlined,
@@ -44,6 +45,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       key: "/admin/products",
       icon: <ShoppingOutlined />,
       label: "Productos",
+    },
+    {
+      key: "/admin/orders",
+      icon: <ContainerOutlined />,
+      label: "Órdenes",
     },
   ];
 

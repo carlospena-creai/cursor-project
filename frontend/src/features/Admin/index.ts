@@ -7,6 +7,7 @@
 // Pages
 export { default as DashboardPage } from "./pages/DashboardPage";
 export { default as ProductsManagementPage } from "./pages/ProductsManagementPage";
+export { default as OrdersManagementPage } from "./pages/OrdersManagementPage";
 
 // Components
 export { AdminRoute } from "./components/AdminRoute";

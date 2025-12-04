@@ -14,6 +14,7 @@ import {
 import {
   DashboardPage,
   ProductsManagementPage,
+  OrdersManagementPage,
   AdminRoute,
   AdminLayout,
 } from "./features/Admin";
@@ -121,6 +122,16 @@ const App: React.FC = () => {
                 <AdminRoute>
                   <AdminLayout>
                     <ProductsManagementPage />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <OrdersManagementPage />
                   </AdminLayout>
                 </AdminRoute>
               }
