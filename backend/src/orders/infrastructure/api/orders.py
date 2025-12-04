@@ -10,7 +10,13 @@ Orders API Endpoints - Clean Architecture
 from fastapi import APIRouter, HTTPException, Query, status, Depends
 from typing import List, Optional
 
-from ...domain.models.order import Order, OrderCreate, OrderUpdate, OrderStatus
+from ...domain.models.order import (
+    Order,
+    OrderCreate,
+    OrderUpdate,
+    OrderStatus,
+    OrdersResponse,
+)
 from ...application import (
     CreateOrderUseCase,
     GetOrdersUseCase,
@@ -31,19 +37,26 @@ from ....users.domain.models.user import User
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
-@router.get("/", response_model=List[Order])
+@router.get("/", response_model=OrdersResponse)
 async def get_orders(
     current_user: User = Depends(get_current_active_user),
     status: Optional[OrderStatus] = Query(None, description="Filter by status"),
     limit: int = Query(20, ge=1, le=100, description="Number of orders to return"),
     offset: int = Query(0, ge=0, description="Number of orders to skip"),
+    sort_by: Optional[str] = Query(
+        None,
+        description="Field to sort by (id, user_id, status, total, created_at, updated_at)",
+    ),
+    sort_order: Optional[str] = Query(None, description="Sort order (asc, desc)"),
 ):
     """
-    Get all orders with optional filters
+    Get all orders with optional filters and sorting
 
     ✅ Thin controller - delega a Use Case
     ✅ Validación con Query parameters
     ✅ Error handling
+    ✅ Retorna órdenes paginadas con total
+    ✅ Soporta ordenamiento del servidor
     ✅ Protected endpoint - requires authentication
     ✅ Regular users see only their own orders
     ✅ Admins see all orders
@@ -56,14 +69,21 @@ async def get_orders(
         use_case: GetOrdersUseCase = get_get_orders_use_case()
 
         # ✅ Ejecutar Use Case
-        orders = await use_case.execute(
+        orders, total = await use_case.execute(
             user_id=user_id,
             status=status,
             skip=offset,
             limit=limit,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
-        return orders
+        return OrdersResponse(
+            orders=orders,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

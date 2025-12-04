@@ -54,6 +54,15 @@ export interface OrdersFilters {
   status?: OrderStatus;
   limit?: number;
   offset?: number;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+}
+
+export interface OrdersResponse {
+  orders: Order[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface CartItem {

@@ -180,12 +180,14 @@ class SQLiteOrderRepository(IOrderRepository):
         status: Optional[OrderStatus] = None,
         skip: int = 0,
         limit: int = 100,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> List[Order]:
         """
-        Obtiene todas las órdenes con filtros
+        Obtiene todas las órdenes con filtros y ordenamiento
 
         Construcción dinámica de query de forma segura con prepared statements.
-        Soporta paginación y múltiples filtros.
+        Soporta paginación, múltiples filtros y ordenamiento dinámico.
         """
         with self.db.transaction() as conn:
             cursor = conn.cursor()
@@ -202,7 +204,23 @@ class SQLiteOrderRepository(IOrderRepository):
                 query += " AND status = ?"
                 params.append(status.value)
 
-            query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            # ✅ Ordenamiento dinámico
+            valid_sort_fields = [
+                "id",
+                "user_id",
+                "status",
+                "total",
+                "created_at",
+                "updated_at",
+            ]
+            if sort_by and sort_by in valid_sort_fields:
+                order = "ASC" if sort_order == "asc" else "DESC"
+                query += f" ORDER BY {sort_by} {order}"
+            else:
+                # Ordenamiento por defecto
+                query += " ORDER BY created_at DESC"
+
+            query += " LIMIT ? OFFSET ?"
             params.extend([limit, skip])
 
             cursor.execute(query, params)

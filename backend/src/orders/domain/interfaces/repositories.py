@@ -54,15 +54,19 @@ class IOrderRepository(ABC):
         status: Optional[OrderStatus] = None,
         skip: int = 0,
         limit: int = 100,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> List[Order]:
         """
-        Obtiene todas las órdenes con filtros opcionales
+        Obtiene todas las órdenes con filtros opcionales y ordenamiento
 
         Args:
             user_id: Filtrar por usuario
             status: Filtrar por estado
             skip: Número de órdenes a omitir (paginación)
             limit: Número máximo de órdenes a retornar
+            sort_by: Campo por el cual ordenar (id, user_id, status, total, created_at, updated_at)
+            sort_order: Orden de clasificación (asc, desc)
 
         Returns:
             Lista de órdenes que coinciden con los filtros

@@ -201,3 +201,20 @@ class OrderUpdate(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class OrdersResponse(BaseModel):
+    """
+    Respuesta paginada de órdenes con total
+    """
+
+    orders: List[Order]
+    total: int = Field(
+        ..., description="Total de órdenes que coinciden con los filtros"
+    )
+    limit: int = Field(..., description="Límite de órdenes por página")
+    offset: int = Field(..., description="Offset de la paginación")
+
+    class Config:
+        json_encoders = {Decimal: lambda v: float(v)}
+        use_enum_values = True

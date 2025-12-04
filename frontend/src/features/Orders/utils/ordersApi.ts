@@ -10,6 +10,7 @@ import type {
   OrderCreate,
   OrderUpdate,
   OrdersFilters,
+  OrdersResponse,
   OrderStatus,
 } from "../types/order.types";
 
@@ -18,19 +19,22 @@ const API_BASE_URL = "http://localhost:8000";
 class OrdersApiService {
   /**
    * Obtiene la lista de órdenes con filtros opcionales
+   * Retorna órdenes paginadas con total
    */
-  async getOrders(filters?: OrdersFilters): Promise<Order[]> {
+  async getOrders(filters?: OrdersFilters): Promise<OrdersResponse> {
     try {
       const params = new URLSearchParams();
 
       if (filters?.status) params.append("status", filters.status);
       if (filters?.limit) params.append("limit", filters.limit.toString());
       if (filters?.offset) params.append("offset", filters.offset.toString());
+      if (filters?.sort_by) params.append("sort_by", filters.sort_by);
+      if (filters?.sort_order) params.append("sort_order", filters.sort_order);
 
       const queryString = params.toString();
       const url = `/orders${queryString ? `?${queryString}` : ""}`;
 
-      return await apiClient.get<Order[]>(url);
+      return await apiClient.get<OrdersResponse>(url);
     } catch (error) {
       console.error("Error in getOrders:", error);
       throw error;

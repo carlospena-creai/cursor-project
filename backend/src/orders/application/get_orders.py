@@ -5,7 +5,8 @@ Get Orders Use Cases
 ✅ Query objects para filtros complejos
 """
 
-from typing import List, Optional
+import asyncio
+from typing import List, Optional, Tuple
 from ..domain.interfaces.repositories import IOrderRepository
 from ..domain.models.order import Order, OrderStatus
 
@@ -33,7 +34,9 @@ class GetOrdersUseCase:
         status: Optional[OrderStatus] = None,
         skip: int = 0,
         limit: int = 100,
-    ) -> List[Order]:
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
+    ) -> Tuple[List[Order], int]:
         """
         Execute the use case
 
@@ -42,14 +45,17 @@ class GetOrdersUseCase:
             status: Filter by order status
             skip: Number of orders to skip (pagination)
             limit: Maximum number of orders to return
+            sort_by: Field to sort by (id, user_id, status, total, created_at, updated_at)
+            sort_order: Sort order (asc, desc)
 
         Returns:
-            List of orders matching filters
+            Tuple of (List of orders matching filters, total count)
 
         Business Rules:
         - Default limit is 100 (prevent overload)
         - Pagination for performance
         - Can filter by user or status
+        - Validates sort_by and sort_order
         """
         # ✅ Validación de parámetros
         if skip < 0:
@@ -63,15 +69,41 @@ class GetOrdersUseCase:
         if user_id is not None and user_id <= 0:
             raise ValueError("user_id must be positive")
 
-        # ✅ Delegar a repository
-        orders = await self.repository.get_all(
-            user_id=user_id,
-            status=status,
-            skip=skip,
-            limit=limit,
+        # ✅ Validar sort_by
+        valid_sort_fields = [
+            "id",
+            "user_id",
+            "status",
+            "total",
+            "created_at",
+            "updated_at",
+        ]
+        if sort_by and sort_by not in valid_sort_fields:
+            raise ValueError(
+                f"Invalid sort_by field. Must be one of: {valid_sort_fields}"
+            )
+
+        # ✅ Validar sort_order
+        if sort_order and sort_order not in ["asc", "desc"]:
+            raise ValueError("sort_order must be 'asc' or 'desc'")
+
+        # ✅ Obtener órdenes y total en paralelo
+        orders, total = await asyncio.gather(
+            self.repository.get_all(
+                user_id=user_id,
+                status=status,
+                skip=skip,
+                limit=limit,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            ),
+            self.repository.count(
+                user_id=user_id,
+                status=status,
+            ),
         )
 
-        return orders
+        return orders, total
 
 
 class GetOrderByIdUseCase:

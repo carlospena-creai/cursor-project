@@ -10,6 +10,7 @@ import type { Order, OrdersFilters } from "../types/order.types";
 
 interface UseOrdersReturn {
   orders: Order[];
+  total: number;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -17,6 +18,7 @@ interface UseOrdersReturn {
 
 export function useOrders(filters?: OrdersFilters): UseOrdersReturn {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,15 +26,23 @@ export function useOrders(filters?: OrdersFilters): UseOrdersReturn {
     try {
       setLoading(true);
       setError(null);
-      const data = await ordersApi.getOrders(filters);
-      setOrders(data);
+      const { orders: fetchedOrders, total: fetchedTotal } =
+        await ordersApi.getOrders(filters);
+      setOrders(fetchedOrders);
+      setTotal(fetchedTotal);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading orders");
       console.error("Error fetching orders:", err);
     } finally {
       setLoading(false);
     }
-  }, [filters?.status, filters?.limit, filters?.offset]);
+  }, [
+    filters?.status,
+    filters?.limit,
+    filters?.offset,
+    filters?.sort_by,
+    filters?.sort_order,
+  ]);
 
   useEffect(() => {
     fetchOrders();
@@ -40,6 +50,7 @@ export function useOrders(filters?: OrdersFilters): UseOrdersReturn {
 
   return {
     orders,
+    total,
     loading,
     error,
     refetch: fetchOrders,
