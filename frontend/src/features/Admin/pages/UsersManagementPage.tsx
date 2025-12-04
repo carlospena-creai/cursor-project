@@ -132,11 +132,7 @@ const UsersManagementPage: React.FC = () => {
     setSortOrder(undefined);
   };
 
-  const handleTableChange: TableProps<User>["onChange"] = (
-    pag,
-    tableFilters,
-    sorter
-  ) => {
+  const handleTableChange: TableProps<User>["onChange"] = (pag, sorter) => {
     // Manejar paginación
     if (pag) {
       setPagination((prev) => ({
@@ -150,8 +146,8 @@ const UsersManagementPage: React.FC = () => {
     if (sorter && !Array.isArray(sorter)) {
       const { field, order } = sorter;
       if (field && order) {
-        setSortField(field as string);
-        setSortOrder(order === "ascend" ? "asc" : "desc");
+        setSortField(field as unknown as string);
+        setSortOrder(order as unknown as "asc" | "desc");
       } else {
         setSortField(undefined);
         setSortOrder(undefined);

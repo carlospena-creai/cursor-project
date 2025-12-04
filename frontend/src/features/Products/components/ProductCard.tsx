@@ -5,7 +5,7 @@
  * Muestra la información de un producto en formato de tarjeta.
  */
 import React from "react";
-import { Card, Typography, Tag, Button, Space } from "antd";
+import { Card, Typography, Tag, Button } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { useCart } from "../../Orders/context/CartContext";
 import type { Product } from "../types/product.types";
