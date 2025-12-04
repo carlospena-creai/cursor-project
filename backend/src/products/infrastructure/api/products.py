@@ -8,9 +8,14 @@ Products API Endpoints - Clean Architecture
 """
 
 from fastapi import APIRouter, HTTPException, Query, status, Depends
-from typing import List, Optional
+from typing import Optional
 
-from ...domain.models.product import Product, ProductCreate, ProductUpdate
+from ...domain.models.product import (
+    Product,
+    ProductCreate,
+    ProductUpdate,
+    ProductsResponse,
+)
 from ....shared.middleware.auth import get_current_admin_user
 from ....users.domain.models.user import User
 from ...application import (
@@ -32,7 +37,7 @@ from ...executions import (
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
-@router.get("/", response_model=List[Product])
+@router.get("/", response_model=ProductsResponse)
 async def get_products(
     category: Optional[str] = Query(None, description="Filter by category"),
     min_price: Optional[float] = Query(None, ge=0, description="Minimum price"),
@@ -40,6 +45,7 @@ async def get_products(
     search: Optional[str] = Query(None, description="Search in product name"),
     limit: int = Query(20, ge=1, le=100, description="Number of products to return"),
     offset: int = Query(0, ge=0, description="Number of products to skip"),
+    only_active: bool = Query(True, description="Only return active products"),
 ):
     """
     Get all products with optional filters
@@ -47,23 +53,29 @@ async def get_products(
     ✅ Thin controller - delega a Use Case
     ✅ Validación con Query parameters
     ✅ Error handling
+    ✅ Retorna productos paginados con total
     """
     try:
         # ✅ Obtener Use Case del DI Container
         use_case: GetProductsUseCase = get_get_products_use_case()
 
         # ✅ Ejecutar Use Case
-        products = await use_case.execute(
+        products, total = await use_case.execute(
             skip=offset,
             limit=limit,
             category=category,
             min_price=min_price,
             max_price=max_price,
             search=search,
-            only_active=True,
+            only_active=only_active,
         )
 
-        return products
+        return ProductsResponse(
+            products=products,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

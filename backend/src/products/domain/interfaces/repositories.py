@@ -121,13 +121,21 @@ class IProductRepository(ABC):
 
     @abstractmethod
     async def count(
-        self, category: Optional[str] = None, only_active: bool = True
+        self,
+        category: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        search: Optional[str] = None,
+        only_active: bool = True,
     ) -> int:
         """
         Cuenta productos con filtros opcionales
 
         Args:
             category: Filtrar por categoría
+            min_price: Precio mínimo
+            max_price: Precio máximo
+            search: Búsqueda en nombre del producto
             only_active: Solo contar productos activos
 
         Returns:

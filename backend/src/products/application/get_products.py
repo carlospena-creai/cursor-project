@@ -5,7 +5,8 @@ Get Products Use Cases
 ✅ Query objects para filtros complejos
 """
 
-from typing import List, Optional
+import asyncio
+from typing import List, Optional, Tuple
 from ..domain.interfaces.repositories import IProductRepository
 from ..domain.models.product import Product
 
@@ -36,7 +37,7 @@ class GetProductsUseCase:
         max_price: Optional[float] = None,
         search: Optional[str] = None,
         only_active: bool = True,
-    ) -> List[Product]:
+    ) -> Tuple[List[Product], int]:
         """
         Execute the use case
 
@@ -50,7 +51,7 @@ class GetProductsUseCase:
             only_active: Only return active products
 
         Returns:
-            List of products matching filters
+            Tuple of (List of products matching filters, total count)
 
         Business Rules:
         - Default limit is 100 (prevent overload)
@@ -66,18 +67,27 @@ class GetProductsUseCase:
         elif limit > 100:
             limit = 100
 
-        # ✅ Delegar a repository
-        products = await self.repository.get_all(
-            skip=skip,
-            limit=limit,
-            category=category,
-            min_price=min_price,
-            max_price=max_price,
-            search=search,
-            only_active=only_active,
+        # ✅ Obtener productos y total en paralelo
+        products, total = await asyncio.gather(
+            self.repository.get_all(
+                skip=skip,
+                limit=limit,
+                category=category,
+                min_price=min_price,
+                max_price=max_price,
+                search=search,
+                only_active=only_active,
+            ),
+            self.repository.count(
+                category=category,
+                min_price=min_price,
+                max_price=max_price,
+                search=search,
+                only_active=only_active,
+            ),
         )
 
-        return products
+        return products, total
 
 
 class GetProductByIdUseCase:

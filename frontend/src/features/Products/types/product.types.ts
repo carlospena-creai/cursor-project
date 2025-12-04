@@ -23,10 +23,12 @@ export interface ProductsFilters {
   search?: string;
   limit?: number;
   offset?: number;
+  only_active?: boolean;
 }
 
 export interface ProductsResponse {
   products: Product[];
   total: number;
-  hasMore: boolean;
+  limit: number;
+  offset: number;
 }

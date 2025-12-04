@@ -259,12 +259,18 @@ class SQLiteProductRepository(IProductRepository):
         return product is not None
 
     async def count(
-        self, category: Optional[str] = None, only_active: bool = True
+        self,
+        category: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        search: Optional[str] = None,
+        only_active: bool = True,
     ) -> int:
         """
         Cuenta productos con filtros
 
         Utiliza prepared statements para seguridad.
+        Aplica los mismos filtros que get_all para consistencia.
         """
         with self.db.transaction() as conn:
             cursor = conn.cursor()
@@ -278,6 +284,18 @@ class SQLiteProductRepository(IProductRepository):
             if category:
                 query += " AND category = ?"
                 params.append(category)
+
+            if min_price is not None:
+                query += " AND price >= ?"
+                params.append(int(min_price * 100))  # Convertir a centavos
+
+            if max_price is not None:
+                query += " AND price <= ?"
+                params.append(int(max_price * 100))
+
+            if search:
+                query += " AND name LIKE ?"
+                params.append(f"%{search}%")
 
             cursor.execute(query, params)
             result = cursor.fetchone()

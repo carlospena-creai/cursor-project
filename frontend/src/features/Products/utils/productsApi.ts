@@ -4,7 +4,11 @@
  * Maneja todas las llamadas HTTP al backend de productos.
  * Encapsula la lógica de API en un solo lugar.
  */
-import type { Product, ProductsFilters } from "../types/product.types";
+import type {
+  Product,
+  ProductsFilters,
+  ProductsResponse,
+} from "../types/product.types";
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -17,8 +21,9 @@ class ProductsApiService {
 
   /**
    * Obtiene la lista de productos con filtros opcionales
+   * Retorna productos paginados con total
    */
-  async getProducts(filters?: ProductsFilters): Promise<Product[]> {
+  async getProducts(filters?: ProductsFilters): Promise<ProductsResponse> {
     try {
       const params = new URLSearchParams();
 
@@ -30,6 +35,8 @@ class ProductsApiService {
       if (filters?.search) params.append("search", filters.search);
       if (filters?.limit) params.append("limit", filters.limit.toString());
       if (filters?.offset) params.append("offset", filters.offset.toString());
+      if (filters?.only_active !== undefined)
+        params.append("only_active", filters.only_active.toString());
 
       const url = `${this.baseUrl}/products?${params.toString()}`;
       const response = await fetch(url);

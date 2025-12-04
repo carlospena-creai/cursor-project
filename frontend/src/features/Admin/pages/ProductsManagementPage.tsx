@@ -50,8 +50,7 @@ const ProductsManagementPage: React.FC = () => {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
-    total: 0,
+    pageSize: 10,
   });
 
   // Memorizar los filtros para evitar recrear el objeto en cada render
@@ -61,11 +60,18 @@ const ProductsManagementPage: React.FC = () => {
       category: categoryFilter,
       limit: pagination.pageSize,
       offset: (pagination.current - 1) * pagination.pageSize,
+      only_active: showOnlyActive,
     }),
-    [searchText, categoryFilter, pagination.pageSize, pagination.current]
+    [
+      searchText,
+      categoryFilter,
+      pagination.pageSize,
+      pagination.current,
+      showOnlyActive,
+    ]
   );
 
-  const { products, loading, error, refetch } = useProducts(filters);
+  const { products, total, loading, error, refetch } = useProducts(filters);
 
   const {
     loading: actionLoading,
@@ -75,14 +81,9 @@ const ProductsManagementPage: React.FC = () => {
     bulkDelete,
   } = useProductsManagement();
 
-  // Filtrar productos localmente por estado activo/inactivo
-  // (La búsqueda y categoría ya se manejan en la API)
-  const filteredProducts = useMemo(() => {
-    if (showOnlyActive) {
-      return products.filter((p) => p.is_active);
-    }
-    return products;
-  }, [products, showOnlyActive]);
+  // Los productos ya vienen filtrados del servidor según showOnlyActive
+  // No necesitamos filtrar localmente
+  const filteredProducts = products;
 
   // Actualizar paginación cuando cambian los filtros
   useEffect(() => {
@@ -396,23 +397,13 @@ const ProductsManagementPage: React.FC = () => {
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
-            total: pagination.total || filteredProducts.length,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
-            showTotal: (total) =>
-              `Mostrando ${filteredProducts.length} de ${total} productos`,
-            onChange: (page, pageSize) => {
+            total: total,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} de ${total} productos`,
+            onChange: (page) => {
               setPagination({
                 ...pagination,
                 current: page,
-                pageSize: pageSize || 20,
-              });
-            },
-            onShowSizeChange: (_current, size) => {
-              setPagination({
-                ...pagination,
-                current: 1,
-                pageSize: size,
               });
             },
           }}

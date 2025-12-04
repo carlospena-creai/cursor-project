@@ -48,49 +48,34 @@ class OrderItemCreate(BaseModel):
         if v <= 0:
             raise ValueError("Quantity must be greater than 0")
         if v > 1000:
-            raise ValueError("Quantity exceeds maximum allowed value (1000)")
+            raise ValueError("Quantity cannot exceed 1000")
         return v
-
-    class Config:
-        schema_extra = {"example": {"product_id": 1, "quantity": 2}}
 
 
 class OrderItem(BaseModel):
     """
     Item de una orden
 
-    Representa un producto y su cantidad en una orden.
-    Incluye el precio al momento de la compra (snapshot).
+    Representa un producto en una orden con su información snapshot.
     """
 
     id: Optional[int] = None
-    product_id: int = Field(..., gt=0)
-    product_name: str = Field(..., min_length=1)
-    quantity: int = Field(..., gt=0)
-    unit_price: Decimal = Field(..., gt=0)
-    subtotal: Decimal = Field(..., gt=0)
+    product_id: int = Field(..., description="ID del producto")
+    product_name: str = Field(..., description="Nombre del producto (snapshot)")
+    quantity: int = Field(..., gt=0, description="Cantidad ordenada")
+    unit_price: Decimal = Field(
+        ..., gt=0, description="Precio unitario al momento de la orden"
+    )
+    subtotal: Decimal = Field(
+        ..., gt=0, description="Subtotal del item (quantity * unit_price)"
+    )
 
     @validator("quantity")
     def validate_quantity(cls, v):
-        """Valida que la cantidad sea positiva y razonable"""
+        """Valida que la cantidad sea positiva"""
         if v <= 0:
             raise ValueError("Quantity must be greater than 0")
-        if v > 1000:
-            raise ValueError("Quantity exceeds maximum allowed value (1000)")
         return v
-
-    @validator("unit_price")
-    def validate_unit_price(cls, v):
-        """Valida el precio unitario"""
-        if v <= 0:
-            raise ValueError("Unit price must be greater than 0")
-        if v > Decimal("999999.99"):
-            raise ValueError("Unit price exceeds maximum allowed value")
-        return v
-
-    def calculate_subtotal(self) -> Decimal:
-        """Calcula el subtotal del item"""
-        return self.unit_price * Decimal(self.quantity)
 
     class Config:
         json_encoders = {Decimal: lambda v: float(v)}
@@ -100,17 +85,20 @@ class Order(BaseModel):
     """
     Modelo de Dominio de Orden
 
-    Representa una orden de compra con sus items y estado.
     Encapsula reglas de negocio y validaciones.
     """
 
     id: Optional[int] = None
-    user_id: int = Field(..., gt=0)
-    items: List[OrderItem] = Field(..., min_items=1)
-    status: OrderStatus = Field(default=OrderStatus.PENDING)
-    total: Decimal = Field(..., gt=0)
-    shipping_address: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = Field(None, max_length=1000)
+    user_id: int = Field(..., gt=0, description="ID del usuario que creó la orden")
+    items: List[OrderItem] = Field(..., min_items=1, description="Items de la orden")
+    status: OrderStatus = Field(
+        default=OrderStatus.PENDING, description="Estado de la orden"
+    )
+    total: Decimal = Field(..., gt=0, description="Total de la orden")
+    shipping_address: Optional[str] = Field(
+        None, max_length=500, description="Dirección de envío"
+    )
+    notes: Optional[str] = Field(None, max_length=1000, description="Notas adicionales")
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -122,58 +110,36 @@ class Order(BaseModel):
         return v
 
     @validator("total")
-    def validate_total(cls, v):
-        """Valida que el total sea positivo"""
-        if v <= 0:
-            raise ValueError("Total must be greater than 0")
+    def validate_total(cls, v, values):
+        """Valida que el total coincida con la suma de los items"""
+        if "items" in values:
+            calculated_total = sum(item.subtotal for item in values["items"])
+            if abs(calculated_total - v) > Decimal("0.01"):
+                raise ValueError(
+                    f"Total {v} does not match sum of items {calculated_total}"
+                )
         return v
 
-    def calculate_total(self) -> Decimal:
-        """Calcula el total de la orden sumando los subtotales de los items"""
-        return sum(item.calculate_subtotal() for item in self.items)
+    def can_transition_to(self, new_status: OrderStatus) -> bool:
+        """
+        Business Rule: Verifica si la transición de estado es válida
 
-    def can_be_cancelled(self) -> bool:
-        """Verifica si la orden puede ser cancelada"""
-        return self.status in [OrderStatus.PENDING, OrderStatus.CONFIRMED]
-
-    def can_be_updated(self) -> bool:
-        """Verifica si la orden puede ser actualizada"""
-        return self.status in [OrderStatus.PENDING, OrderStatus.CONFIRMED]
-
-    def is_completed(self) -> bool:
-        """Verifica si la orden está completada"""
-        return self.status == OrderStatus.DELIVERED
-
-    def is_cancelled(self) -> bool:
-        """Verifica si la orden está cancelada"""
-        return self.status == OrderStatus.CANCELLED
-
-    def update_status(self, new_status: OrderStatus) -> None:
-        """Actualiza el estado de la orden con validación"""
-        # Reglas de negocio: transiciones de estado válidas
+        ✅ Encapsula lógica de negocio en el modelo de dominio
+        """
         valid_transitions = {
             OrderStatus.PENDING: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-            OrderStatus.CONFIRMED: [
-                OrderStatus.PROCESSING,
-                OrderStatus.CANCELLED,
-            ],
+            OrderStatus.CONFIRMED: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
             OrderStatus.PROCESSING: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
             OrderStatus.SHIPPED: [OrderStatus.DELIVERED],
             OrderStatus.DELIVERED: [],  # Estado final
             OrderStatus.CANCELLED: [],  # Estado final
         }
 
-        if new_status not in valid_transitions.get(self.status, []):
-            raise ValueError(f"Cannot transition from {self.status} to {new_status}")
-
-        self.status = new_status
+        return new_status in valid_transitions.get(self.status, [])
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None,
-            Decimal: lambda v: float(v),
-        }
         use_enum_values = True
+        json_encoders = {Decimal: lambda v: float(v)}
 
 
 class OrderCreate(BaseModel):
@@ -225,12 +191,13 @@ class OrderUpdate(BaseModel):
     """
     Data Transfer Object para actualizar una orden
 
-    Solo permite actualizar el estado y campos opcionales.
+    Todos los campos son opcionales (partial update).
     """
 
-    status: Optional[OrderStatus] = None
-    shipping_address: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = Field(None, max_length=1000)
+    shipping_address: Optional[str] = Field(
+        None, max_length=500, description="Dirección de envío"
+    )
+    notes: Optional[str] = Field(None, max_length=1000, description="Notas adicionales")
 
     class Config:
         use_enum_values = True
