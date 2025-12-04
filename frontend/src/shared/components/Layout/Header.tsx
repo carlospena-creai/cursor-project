@@ -15,6 +15,7 @@ import {
   ShopOutlined,
   HeartOutlined,
   SearchOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../features/Auth/context/AuthContext";
@@ -51,14 +52,26 @@ const AppHeader: React.FC = () => {
       label: "Products",
       onClick: () => navigate("/"),
     },
-    {
-      key: "/orders",
-      icon: <ShopOutlined />,
-      label: "Orders",
-      onClick: () => navigate("/orders"),
-    },
-    // TODO Day 4: Profile, Login
-    // TODO Day 5: Admin (if admin user)
+    ...(isAuthenticated
+      ? [
+          {
+            key: "/orders",
+            icon: <ShopOutlined />,
+            label: "Orders",
+            onClick: () => navigate("/orders"),
+          },
+        ]
+      : []),
+    ...(isAuthenticated && user?.is_admin
+      ? [
+          {
+            key: "/admin",
+            icon: <DashboardOutlined />,
+            label: "Admin",
+            onClick: () => navigate("/admin"),
+          },
+        ]
+      : []),
   ];
 
   // ✅ ACTUALIZADO: Navega al carrito

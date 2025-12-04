@@ -13,6 +13,7 @@ import {
   ProfilePage,
   ProtectedRoute,
 } from "./features/Auth";
+import { DashboardPage, AdminRoute } from "./features/Admin";
 
 const { Content, Footer } = Layout;
 
@@ -71,9 +72,16 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <DashboardPage />
+                    </AdminRoute>
+                  }
+                />
                 {/* ❌ PROBLEMA: More routes will be added but no route protection */}
                 {/* TODO Day 2: /products, /products/:id */}
-                {/* TODO Day 5: /admin/* (protected routes) */}
 
                 {/* ❌ PROBLEMA: No 404 route */}
                 {/* ❌ PROBLEMA: No catch-all route */}
