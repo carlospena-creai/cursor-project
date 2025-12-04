@@ -12,6 +12,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShopOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -50,6 +51,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       key: "/admin/orders",
       icon: <ContainerOutlined />,
       label: "Órdenes",
+    },
+    {
+      key: "/admin/users",
+      icon: <UserOutlined />,
+      label: "Usuarios",
     },
   ];
 

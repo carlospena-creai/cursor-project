@@ -40,3 +40,39 @@ export interface ProductBulkUpdate {
 export interface ProductBulkDelete {
   product_ids: number[];
 }
+
+// Users Management Types
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  full_name: string | null;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string | null;
+}
+
+export interface UsersResponse {
+  users: User[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface UsersFilters {
+  is_active?: boolean | null;
+  is_admin?: boolean | null;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+}
+
+export interface UserUpdate {
+  email?: string;
+  username?: string;
+  full_name?: string | null;
+  is_active?: boolean;
+  is_admin?: boolean;
+}
