@@ -1,7 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Layout } from "antd";
-import AppHeader from "@shared/components/Layout/Header";
 import { ProductsPage } from "./features/Products";
 import SearchResultsPage from "./features/Products/pages/SearchResultsPage";
 import { CartProvider } from "./features/Orders/context/CartContext";
@@ -13,9 +11,13 @@ import {
   ProfilePage,
   ProtectedRoute,
 } from "./features/Auth";
-import { DashboardPage, AdminRoute } from "./features/Admin";
-
-const { Content, Footer } = Layout;
+import {
+  DashboardPage,
+  ProductsManagementPage,
+  AdminRoute,
+  AdminLayout,
+} from "./features/Admin";
+import MainLayout from "@shared/components/Layout/MainLayout";
 
 // ❌ PROBLEMA: No error boundaries para manejar crashes
 // ❌ PROBLEMA: No loading states globales
@@ -27,75 +29,108 @@ const App: React.FC = () => {
     <Router>
       <AuthProvider>
         <CartProvider>
-          {/* ❌ PROBLEMA: Layout muy básico sin responsiveness avanzada */}
-          <Layout style={{ minHeight: "100vh" }}>
-            <AppHeader />
+          <Routes>
+            {/* Rutas con MainLayout (header y footer) */}
+            <Route
+              path="/"
+              element={
+                <MainLayout>
+                  <ProductsPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <MainLayout>
+                  <SearchResultsPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <MainLayout>
+                  <LoginPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <MainLayout>
+                  <RegisterPage />
+                </MainLayout>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CartPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CheckoutPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <OrdersPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ProfilePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
 
-            {/* ❌ PROBLEMA: Content padding hardcodeado sin responsiveness */}
-            <Content style={{ padding: "24px 50px" }}>
-              {/* ❌ PROBLEMA: No error boundary wrapper para rutas */}
-              {/* ❌ PROBLEMA: No loading fallback para suspense */}
-              <Routes>
-                <Route path="/" element={<ProductsPage />} />
-                <Route path="/search" element={<SearchResultsPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route
-                  path="/cart"
-                  element={
-                    <ProtectedRoute>
-                      <CartPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/checkout"
-                  element={
-                    <ProtectedRoute>
-                      <CheckoutPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/orders"
-                  element={
-                    <ProtectedRoute>
-                      <OrdersPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <ProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminRoute>
-                      <DashboardPage />
-                    </AdminRoute>
-                  }
-                />
-                {/* ❌ PROBLEMA: More routes will be added but no route protection */}
-                {/* TODO Day 2: /products, /products/:id */}
+            {/* Rutas de Admin con AdminLayout (sin header principal) */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <DashboardPage />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <ProductsManagementPage />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            {/* ❌ PROBLEMA: More routes will be added but no route protection */}
+            {/* TODO Day 2: /products, /products/:id */}
 
-                {/* ❌ PROBLEMA: No 404 route */}
-                {/* ❌ PROBLEMA: No catch-all route */}
-              </Routes>
-            </Content>
-
-            {/* ❌ PROBLEMA: Footer muy básico sin links útiles */}
-            <Footer style={{ textAlign: "center", background: "#f0f2f5" }}>
-              E-commerce Evolution ©2024 - Learning Project
-              {/* ❌ PROBLEMA: No footer links (Privacy, Terms, etc.) */}
-              {/* ❌ PROBLEMA: No social media links */}
-              {/* ❌ PROBLEMA: No newsletter signup */}
-            </Footer>
-          </Layout>
+            {/* ❌ PROBLEMA: No 404 route */}
+            {/* ❌ PROBLEMA: No catch-all route */}
+          </Routes>
         </CartProvider>
       </AuthProvider>
     </Router>
