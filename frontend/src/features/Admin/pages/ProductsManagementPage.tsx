@@ -19,7 +19,6 @@ import {
   Col,
   Tooltip,
   message,
-  Modal,
 } from "antd";
 import {
   PlusOutlined,
@@ -122,22 +121,13 @@ const ProductsManagementPage: React.FC = () => {
       return;
     }
 
-    Modal.confirm({
-      title: "¿Eliminar productos seleccionados?",
-      content: `Está a punto de eliminar ${selectedRowKeys.length} producto(s). Esta acción no se puede deshacer.`,
-      okText: "Eliminar",
-      okType: "danger",
-      cancelText: "Cancelar",
-      onOk: async () => {
-        const result = await bulkDelete({
-          product_ids: selectedRowKeys.map((key) => Number(key)),
-        });
-        if (result) {
-          setSelectedRowKeys([]);
-          refetch();
-        }
-      },
+    const result = await bulkDelete({
+      product_ids: selectedRowKeys.map((key) => Number(key)),
     });
+    if (result) {
+      setSelectedRowKeys([]);
+      refetch();
+    }
   };
 
   const handleEdit = (product: Product) => {
