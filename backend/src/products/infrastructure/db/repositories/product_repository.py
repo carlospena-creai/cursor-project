@@ -129,13 +129,15 @@ class SQLiteProductRepository(IProductRepository):
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         search: Optional[str] = None,
-        only_active: bool = True,
+        only_active: Optional[bool] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> List[Product]:
         """
-        Obtiene todos los productos con filtros
+        Obtiene todos los productos con filtros y ordenamiento
 
         Construcción dinámica de query de forma segura con prepared statements.
-        Soporta paginación y múltiples filtros.
+        Soporta paginación, múltiples filtros y ordenamiento dinámico.
         """
         with self.db.transaction() as conn:
             cursor = conn.cursor()
@@ -144,8 +146,9 @@ class SQLiteProductRepository(IProductRepository):
             query = "SELECT * FROM products WHERE 1=1"
             params = []
 
-            if only_active:
-                query += " AND is_active = 1"
+            if only_active is not None:
+                query += " AND is_active = ?"
+                params.append(1 if only_active else 0)
 
             if category:
                 query += " AND category = ?"
@@ -163,7 +166,23 @@ class SQLiteProductRepository(IProductRepository):
                 query += " AND name LIKE ?"
                 params.append(f"%{search}%")
 
-            query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            # ✅ Ordenamiento dinámico
+            valid_sort_fields = [
+                "id",
+                "name",
+                "price",
+                "stock",
+                "created_at",
+                "updated_at",
+            ]
+            if sort_by and sort_by in valid_sort_fields:
+                order = "ASC" if sort_order == "asc" else "DESC"
+                query += f" ORDER BY {sort_by} {order}"
+            else:
+                # Ordenamiento por defecto
+                query += " ORDER BY created_at DESC"
+
+            query += " LIMIT ? OFFSET ?"
             params.extend([limit, skip])
 
             cursor.execute(query, params)
@@ -264,7 +283,7 @@ class SQLiteProductRepository(IProductRepository):
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         search: Optional[str] = None,
-        only_active: bool = True,
+        only_active: Optional[bool] = None,
     ) -> int:
         """
         Cuenta productos con filtros
@@ -278,8 +297,9 @@ class SQLiteProductRepository(IProductRepository):
             query = "SELECT COUNT(*) FROM products WHERE 1=1"
             params = []
 
-            if only_active:
-                query += " AND is_active = 1"
+            if only_active is not None:
+                query += " AND is_active = ?"
+                params.append(1 if only_active else 0)
 
             if category:
                 query += " AND category = ?"

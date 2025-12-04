@@ -45,15 +45,24 @@ async def get_products(
     search: Optional[str] = Query(None, description="Search in product name"),
     limit: int = Query(20, ge=1, le=100, description="Number of products to return"),
     offset: int = Query(0, ge=0, description="Number of products to skip"),
-    only_active: bool = Query(True, description="Only return active products"),
+    only_active: Optional[bool] = Query(
+        None,
+        description="Filter by active status (True=active only, False=inactive only, None=all)",
+    ),
+    sort_by: Optional[str] = Query(
+        None,
+        description="Field to sort by (id, name, price, stock, created_at, updated_at)",
+    ),
+    sort_order: Optional[str] = Query(None, description="Sort order (asc, desc)"),
 ):
     """
-    Get all products with optional filters
+    Get all products with optional filters and sorting
 
     ✅ Thin controller - delega a Use Case
     ✅ Validación con Query parameters
     ✅ Error handling
     ✅ Retorna productos paginados con total
+    ✅ Soporta ordenamiento del servidor
     """
     try:
         # ✅ Obtener Use Case del DI Container
@@ -68,6 +77,8 @@ async def get_products(
             max_price=max_price,
             search=search,
             only_active=only_active,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
         return ProductsResponse(

@@ -58,10 +58,12 @@ class IProductRepository(ABC):
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         search: Optional[str] = None,
-        only_active: bool = True,
+        only_active: Optional[bool] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> List[Product]:
         """
-        Obtiene todos los productos con filtros opcionales
+        Obtiene todos los productos con filtros opcionales y ordenamiento
 
         Args:
             skip: Número de productos a omitir (paginación)
@@ -70,7 +72,9 @@ class IProductRepository(ABC):
             min_price: Precio mínimo
             max_price: Precio máximo
             search: Búsqueda en nombre del producto
-            only_active: Solo retornar productos activos
+            only_active: Filtrar por estado activo (True=activos, False=inactivos, None=todos)
+            sort_by: Campo por el cual ordenar (id, name, price, stock, created_at)
+            sort_order: Orden de clasificación (asc, desc)
 
         Returns:
             Lista de productos que coinciden con los filtros

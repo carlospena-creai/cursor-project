@@ -36,7 +36,9 @@ class GetProductsUseCase:
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         search: Optional[str] = None,
-        only_active: bool = True,
+        only_active: Optional[bool] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> Tuple[List[Product], int]:
         """
         Execute the use case
@@ -49,6 +51,8 @@ class GetProductsUseCase:
             max_price: Maximum price filter
             search: Search in product name
             only_active: Only return active products
+            sort_by: Field to sort by (id, name, price, stock, created_at)
+            sort_order: Sort order (asc, desc)
 
         Returns:
             Tuple of (List of products matching filters, total count)
@@ -57,6 +61,7 @@ class GetProductsUseCase:
         - Default limit is 100 (prevent overload)
         - By default only active products
         - Pagination for performance
+        - Validates sort_by and sort_order
         """
         # ✅ Validación de parámetros
         if skip < 0:
@@ -66,6 +71,17 @@ class GetProductsUseCase:
             limit = 1
         elif limit > 100:
             limit = 100
+
+        # ✅ Validar sort_by
+        valid_sort_fields = ["id", "name", "price", "stock", "created_at", "updated_at"]
+        if sort_by and sort_by not in valid_sort_fields:
+            raise ValueError(
+                f"Invalid sort_by field. Must be one of: {valid_sort_fields}"
+            )
+
+        # ✅ Validar sort_order
+        if sort_order and sort_order not in ["asc", "desc"]:
+            raise ValueError("sort_order must be 'asc' or 'desc'")
 
         # ✅ Obtener productos y total en paralelo
         products, total = await asyncio.gather(
@@ -77,6 +93,8 @@ class GetProductsUseCase:
                 max_price=max_price,
                 search=search,
                 only_active=only_active,
+                sort_by=sort_by,
+                sort_order=sort_order,
             ),
             self.repository.count(
                 category=category,

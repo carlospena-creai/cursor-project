@@ -24,6 +24,8 @@ export interface ProductsFilters {
   limit?: number;
   offset?: number;
   only_active?: boolean;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
 }
 
 export interface ProductsResponse {

@@ -37,6 +37,8 @@ class ProductsApiService {
       if (filters?.offset) params.append("offset", filters.offset.toString());
       if (filters?.only_active !== undefined)
         params.append("only_active", filters.only_active.toString());
+      if (filters?.sort_by) params.append("sort_by", filters.sort_by);
+      if (filters?.sort_order) params.append("sort_order", filters.sort_order);
 
       const url = `${this.baseUrl}/products?${params.toString()}`;
       const response = await fetch(url);

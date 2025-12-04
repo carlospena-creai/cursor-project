@@ -45,7 +45,17 @@ const ProductsManagementPage: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [showOnlyActive, setShowOnlyActive] = useState<boolean>(true);
+  const [showOnlyActive, setShowOnlyActive] = useState<boolean | undefined>(
+    undefined
+  );
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined
+  );
+  const [tableFilters, setTableFilters] = useState<{
+    category?: string[];
+    is_active?: boolean[];
+  }>({});
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -60,6 +70,8 @@ const ProductsManagementPage: React.FC = () => {
       limit: pagination.pageSize,
       offset: (pagination.current - 1) * pagination.pageSize,
       only_active: showOnlyActive,
+      sort_by: sortField,
+      sort_order: sortOrder,
     }),
     [
       searchText,
@@ -67,6 +79,8 @@ const ProductsManagementPage: React.FC = () => {
       pagination.pageSize,
       pagination.current,
       showOnlyActive,
+      sortField,
+      sortOrder,
     ]
   );
 
@@ -87,7 +101,7 @@ const ProductsManagementPage: React.FC = () => {
   // Actualizar paginación cuando cambian los filtros
   useEffect(() => {
     setPagination((prev) => ({ ...prev, current: 1 }));
-  }, [searchText, categoryFilter, showOnlyActive]);
+  }, [searchText, categoryFilter, showOnlyActive, sortField, sortOrder]);
 
   const handleCreate = async (values: any) => {
     const result = await createProduct(values);
@@ -143,7 +157,57 @@ const ProductsManagementPage: React.FC = () => {
   const handleClearFilters = () => {
     setSearchText("");
     setCategoryFilter(undefined);
-    setShowOnlyActive(true);
+    setShowOnlyActive(undefined); // Mostrar todos por defecto
+    setTableFilters({});
+    setSortField(undefined);
+    setSortOrder(undefined);
+  };
+
+  const handleTableChange = (
+    pag: any,
+    filters: Record<string, any>,
+    sorter: any
+  ) => {
+    // Manejar paginación
+    setPagination({
+      current: pag.current,
+      pageSize: pag.pageSize,
+    });
+
+    // Manejar filtros de la tabla
+    const newFilters: { category?: string[]; is_active?: boolean[] } = {};
+    if (filters.category) {
+      newFilters.category = filters.category as string[];
+      setCategoryFilter(
+        filters.category.length > 0
+          ? (filters.category[0] as string)
+          : undefined
+      );
+    } else {
+      setCategoryFilter(undefined);
+    }
+
+    if (filters.is_active && filters.is_active.length > 0) {
+      newFilters.is_active = filters.is_active as boolean[];
+      // Si hay filtro, usar el valor seleccionado
+      // Si es true, mostrar solo activos; si es false, mostrar solo inactivos
+      const filterValue = filters.is_active[0] as boolean;
+      setShowOnlyActive(filterValue);
+    } else {
+      // Si no hay filtro, mostrar todos (None = todos)
+      setShowOnlyActive(undefined as any);
+    }
+
+    setTableFilters(newFilters);
+
+    // Manejar ordenamiento
+    if (sorter && sorter.field) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+    } else {
+      setSortField(undefined);
+      setSortOrder(undefined);
+    }
   };
 
   const rowSelection: TableProps<Product>["rowSelection"] = {
@@ -160,13 +224,13 @@ const ProductsManagementPage: React.FC = () => {
       dataIndex: "id",
       key: "id",
       width: 80,
-      sorter: (a, b) => a.id - b.id,
+      sorter: true,
     },
     {
       title: "Nombre",
       dataIndex: "name",
       key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: true,
       render: (text, record) => (
         <div>
           <div style={{ fontWeight: 500 }}>{text}</div>
@@ -195,7 +259,7 @@ const ProductsManagementPage: React.FC = () => {
         { text: "Food", value: "Food" },
         { text: "Other", value: "Other" },
       ],
-      onFilter: (value, record) => record.category === value,
+      filteredValue: tableFilters.category,
       render: (category) => <Tag color="blue">{category}</Tag>,
     },
     {
@@ -203,7 +267,7 @@ const ProductsManagementPage: React.FC = () => {
       dataIndex: "price",
       key: "price",
       width: 120,
-      sorter: (a, b) => a.price - b.price,
+      sorter: true,
       render: (price) => `$${price.toFixed(2)}`,
     },
     {
@@ -211,7 +275,7 @@ const ProductsManagementPage: React.FC = () => {
       dataIndex: "stock",
       key: "stock",
       width: 100,
-      sorter: (a, b) => a.stock - b.stock,
+      sorter: true,
       render: (stock) => (
         <Tag color={stock > 10 ? "green" : stock > 0 ? "orange" : "red"}>
           {stock}
@@ -227,7 +291,7 @@ const ProductsManagementPage: React.FC = () => {
         { text: "Activo", value: true },
         { text: "Inactivo", value: false },
       ],
-      onFilter: (value, record) => record.is_active === value,
+      filteredValue: tableFilters.is_active,
       render: (isActive) => (
         <Tag color={isActive ? "green" : "red"}>
           {isActive ? "Activo" : "Inactivo"}
@@ -384,18 +448,13 @@ const ProductsManagementPage: React.FC = () => {
           rowKey="id"
           loading={loading || actionLoading}
           rowSelection={rowSelection}
+          onChange={handleTableChange}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
             total: total,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} de ${total} productos`,
-            onChange: (page) => {
-              setPagination({
-                ...pagination,
-                current: page,
-              });
-            },
           }}
           scroll={{ x: 1200 }}
         />
