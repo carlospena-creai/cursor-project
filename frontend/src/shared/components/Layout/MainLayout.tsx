@@ -20,7 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <AppHeader />
       {/* ❌ PROBLEMA: Content padding hardcodeado sin responsiveness */}
       <Content style={{ padding: "24px 50px" }}>
-        {/* ❌ PROBLEMA: No error boundary wrapper para rutas */}
+        {/* ✅ Error boundary wrapper implementado en App.tsx */}
         {/* ❌ PROBLEMA: No loading fallback para suspense */}
         {children}
       </Content>
