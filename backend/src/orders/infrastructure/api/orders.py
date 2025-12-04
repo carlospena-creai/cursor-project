@@ -7,8 +7,8 @@ Orders API Endpoints - Clean Architecture
 ✅ Error handling consistente
 """
 
-from fastapi import APIRouter, HTTPException, Query, status, Depends
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException, Query, status, Depends, Body
+from typing import Optional
 
 from ...domain.models.order import (
     Order,
@@ -182,7 +182,7 @@ async def create_order(
 @router.patch("/{order_id}/status", response_model=Order)
 async def update_order_status(
     order_id: int,
-    new_status: OrderStatus,
+    new_status: OrderStatus = Body(..., description="New order status"),
     current_user: User = Depends(get_current_active_user),
 ):
     """

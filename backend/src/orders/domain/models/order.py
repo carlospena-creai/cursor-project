@@ -194,6 +194,9 @@ class OrderUpdate(BaseModel):
     Todos los campos son opcionales (partial update).
     """
 
+    status: Optional[OrderStatus] = Field(
+        None, description="Estado de la orden"
+    )
     shipping_address: Optional[str] = Field(
         None, max_length=500, description="Dirección de envío"
     )

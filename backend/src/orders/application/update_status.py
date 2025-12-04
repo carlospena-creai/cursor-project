@@ -57,10 +57,10 @@ class UpdateOrderStatusUseCase:
             return None
 
         # ✅ Validar transición de estado usando la lógica del dominio
-        try:
-            order.update_status(new_status)
-        except ValueError as e:
-            raise ValueError(f"Invalid status transition: {str(e)}")
+        if not order.can_transition_to(new_status):
+            raise ValueError(
+                f"Cannot transition from {order.status.value} to {new_status.value}"
+            )
 
         # ✅ Actualizar en el repositorio
         updated_order = await self.repository.update_status(order_id, new_status)

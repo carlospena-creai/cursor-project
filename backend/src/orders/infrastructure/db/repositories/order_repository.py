@@ -280,6 +280,10 @@ class SQLiteOrderRepository(IOrderRepository):
             if not update_fields:
                 return existing
 
+            # ✅ Actualizar updated_at cuando se modifica cualquier campo
+            update_fields.append("updated_at = ?")
+            params.append(datetime.now().isoformat())
+
             query = f"UPDATE orders SET {', '.join(update_fields)} WHERE id = ?"
             params.append(order_id)
 

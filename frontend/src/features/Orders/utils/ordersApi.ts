@@ -82,7 +82,7 @@ class OrdersApiService {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      // FastAPI espera el valor del enum directamente en el body
+      // FastAPI espera new_status en el body
       const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
         method: "PATCH",
         headers,
