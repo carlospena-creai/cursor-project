@@ -6,6 +6,7 @@ import uvicorn
 from src.products.infrastructure.api import router as products_router
 from src.users.infrastructure.api import router as users_router
 from src.orders.infrastructure.api import router as orders_router
+from src.admin.infrastructure.api import router as admin_router
 
 # ✅ Clean Architecture: Import de DI Containers para inicialización
 from src.products.executions import init_products_module
@@ -34,6 +35,7 @@ app.add_middleware(
 app.include_router(products_router)
 app.include_router(users_router)
 app.include_router(orders_router)
+app.include_router(admin_router)
 
 
 @app.get("/", tags=["General"])
