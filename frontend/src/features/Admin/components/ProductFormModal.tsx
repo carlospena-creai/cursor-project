@@ -75,7 +75,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         initialValues={{
           is_active: true,
           stock: 0,
-          price: 0,
         }}
       >
         <Form.Item
@@ -113,8 +112,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             { required: true, message: "El precio es requerido" },
             {
               type: "number",
-              min: 0,
-              message: "El precio debe ser mayor o igual a 0",
+              message: "El precio debe ser un número",
+            },
+            {
+              validator: (_, value) => {
+                if (value === undefined || value === null) {
+                  return Promise.resolve();
+                }
+                if (typeof value === "number" && value > 0) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("El precio debe ser mayor que 0")
+                );
+              },
             },
           ]}
         >
@@ -122,7 +133,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             style={{ width: "100%" }}
             placeholder="0.00"
             prefix="$"
-            min={0}
+            min={0.01}
             step={0.01}
             precision={2}
           />
