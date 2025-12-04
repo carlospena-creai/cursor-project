@@ -6,7 +6,7 @@ Incluye validaciones y reglas de negocio.
 """
 
 from pydantic import BaseModel, Field, validator, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import re
 
@@ -115,6 +115,52 @@ class UserResponse(BaseModel):
     is_active: bool
     is_admin: bool
     created_at: Optional[datetime]
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
+
+
+class UserUpdate(BaseModel):
+    """
+    Data Transfer Object para actualizar un usuario
+
+    Todos los campos son opcionales (partial update).
+    """
+
+    email: Optional[EmailStr] = None
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    full_name: Optional[str] = Field(None, max_length=100)
+    is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None
+
+    @validator("username")
+    def validate_username(cls, v):
+        """Valida formato del username si se proporciona"""
+        if v is not None:
+            import re
+
+            if not re.match(r"^[a-zA-Z0-9_-]+$", v):
+                raise ValueError(
+                    "Username can only contain letters, numbers, hyphens and underscores"
+                )
+            return v.lower()
+        return v
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
+
+
+class UsersResponse(BaseModel):
+    """
+    Respuesta paginada de usuarios con total
+    """
+
+    users: List[UserResponse]
+    total: int = Field(
+        ..., description="Total de usuarios que coinciden con los filtros"
+    )
+    limit: int = Field(..., description="Límite de usuarios por página")
+    offset: int = Field(..., description="Offset de la paginación")
 
     class Config:
         json_encoders = {datetime: lambda v: v.isoformat() if v else None}

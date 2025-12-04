@@ -5,6 +5,7 @@ import uvicorn
 # ✅ Clean Architecture: Import de routers de Infrastructure
 from src.products.infrastructure.api import router as products_router
 from src.users.infrastructure.api import router as users_router
+from src.users.infrastructure.api import admin_router as users_admin_router
 from src.orders.infrastructure.api import router as orders_router
 from src.admin.infrastructure.api import router as admin_router
 
@@ -34,6 +35,7 @@ app.add_middleware(
 # ✅ Include routers - Clean Architecture
 app.include_router(products_router)
 app.include_router(users_router)
+app.include_router(users_admin_router)
 app.include_router(orders_router)
 app.include_router(admin_router)
 

@@ -13,6 +13,8 @@ from .domain.interfaces.repositories import IUserRepository
 from .application.register import RegisterUserUseCase
 from .application.login import LoginUserUseCase
 from .application.get_profile import GetProfileUseCase
+from .application.get_users import GetUsersUseCase
+from .application.update_user import UpdateUserUseCase
 
 # Infrastructure
 from .infrastructure.db.repositories.user_repository import SQLiteUserRepository
@@ -77,6 +79,18 @@ def get_profile_use_case() -> GetProfileUseCase:
     """Crea instancia de GetProfileUseCase"""
     repository = get_user_repository()
     return GetProfileUseCase(repository)
+
+
+def get_get_users_use_case() -> GetUsersUseCase:
+    """Crea instancia de GetUsersUseCase"""
+    repository = get_user_repository()
+    return GetUsersUseCase(repository)
+
+
+def get_update_user_use_case() -> UpdateUserUseCase:
+    """Crea instancia de UpdateUserUseCase"""
+    repository = get_user_repository()
+    return UpdateUserUseCase(repository)
 
 
 # ============================================================================

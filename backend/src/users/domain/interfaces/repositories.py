@@ -6,8 +6,8 @@ Principio de Inversión de Dependencias (SOLID-D).
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
-from ..models.user import User, UserCreate
+from typing import Optional, List
+from ..models.user import User, UserCreate, UserUpdate
 
 
 class IUserRepository(ABC):
@@ -110,5 +110,67 @@ class IUserRepository(ABC):
 
         Returns:
             True si el username existe
+        """
+        pass
+
+    @abstractmethod
+    async def get_all(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        is_active: Optional[bool] = None,
+        is_admin: Optional[bool] = None,
+        search: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
+    ) -> List[User]:
+        """
+        Obtiene todos los usuarios con filtros opcionales y ordenamiento
+
+        Args:
+            skip: Número de usuarios a omitir (paginación)
+            limit: Número máximo de usuarios a retornar
+            is_active: Filtrar por estado activo (True=activos, False=inactivos, None=todos)
+            is_admin: Filtrar por rol admin (True=admins, False=regulares, None=todos)
+            search: Búsqueda en email, username o full_name
+            sort_by: Campo por el cual ordenar (id, email, username, full_name, created_at, updated_at)
+            sort_order: Orden de clasificación (asc, desc)
+
+        Returns:
+            Lista de usuarios que coinciden con los filtros
+        """
+        pass
+
+    @abstractmethod
+    async def count(
+        self,
+        is_active: Optional[bool] = None,
+        is_admin: Optional[bool] = None,
+        search: Optional[str] = None,
+    ) -> int:
+        """
+        Cuenta usuarios con filtros opcionales
+
+        Args:
+            is_active: Filtrar por estado activo
+            is_admin: Filtrar por rol admin
+            search: Búsqueda en email, username o full_name
+
+        Returns:
+            Número de usuarios que coinciden con los filtros
+        """
+        pass
+
+    @abstractmethod
+    async def update(self, user_id: int, user_data: UserUpdate) -> Optional[User]:
+        """
+        Actualiza un usuario existente
+
+        Args:
+            user_id: Identificador del usuario
+            user_data: Datos para actualizar el usuario
+
+        Returns:
+            Usuario actualizado si existe, None si no se encuentra
         """
         pass
